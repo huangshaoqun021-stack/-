@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>工伤赔偿计算器</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Microsoft YaHei', sans-serif;
+        }
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        .description {
+            color: #7f8c8d;
+            margin-bottom: 20px;
+        }
+        .input-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .input-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: border 0.3s;
+        }
+        input:focus, select:focus {
+            border-color: #3498db;
+            outline: none;
+        }
+        button {
+            width: 100%;
+            padding: 14px;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s;
+            margin-top: 20px;
+        }
+        button:hover {
+            background: #2980b9;
+        }
+        .result-section {
+            display: none;
+            margin-top: 30px;
+        }
+        .result-card {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 5px solid #3498db;
+        }
+        .result-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #2c3e50;
+            font-size: 18px;
+        }
+        .result-detail {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            padding-bottom: 8px;
+            border-bottom: 1px dashed #ddd;
+        }
+        .total {
+            font-size: 20px;
+            font-weight: bold;
+            color: #e74c3c;
+            padding-top: 15px;
+            border-top: 2px solid #ddd;
+            margin-top: 15px;
+        }
+        .payer {
+            font-size: 14px;
+            color: #16a085;
+            margin-top: 5px;
+        }
+        .instructions {
+            margin-top: 40px;
+            padding: 20px;
+            background: #e8f4fc;
+            border-radius: 8px;
+        }
+        .instructions h2 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+        .instructions ol {
+            padding-left: 20px;
+        }
+        .instructions li {
+            margin-bottom: 10px;
+        }
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+        @media (max-width: 768px) {
+            .input-section {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>工伤赔偿计算器</h1>
+            <p class="description">根据《工伤保险条例》和相关规定计算工伤赔偿金额</p>
+        </header>
+        
+        <div class="input-section">
+            <div>
+                <div class="input-group">
+                    <label for="salary">负伤前12个月平均工资（元）</label>
+                    <input type="number" id="salary" placeholder="请输入月平均工资" min="0">
+                </div>
+                
+                <div class="input-group">
+                    <label for="grade">伤残等级</label>
+                    <select id="grade">
+                        <option value="7">7级</option>
+                        <option value="8">8级</option>
+                        <option value="9">9级</option>
+                        <option value="10">10级</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div>
+                <div class="input-group">
+                    <label for="averageSalary">上年度全市职工月平均工资（元）</label>
+                    <input type="number" id="averageSalary" value="12307" min="0">
+                </div>
+                
+                <div class="input-group">
+                    <label for="region">所在地区</label>
+                    <select id="region">
+                        <option value="shanghai">上海</option>
+                        <option value="beijing">北京</option>
+                        <option value="guangzhou">广州</option>
+                        <option value="shenzhen">深圳</option>
+                        <option value="other">其他地区</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        
+        <button onclick="calculate()">计算赔偿金额</button>
+        
+        <div id="results" class="result-section">
+            <div class="result-card">
+                <div class="result-title">一次性伤残补助金</div>
+                <div class="result-detail">
+                    <span>计算方式：</span>
+                    <span id="disability-detail"></span>
+                </div>
+                <div class="result-detail">
+                    <span>金额：</span>
+                    <span id="disability-amount"></span>
+                </div>
+                <div class="payer" id="disability-payer"></div>
+            </div>
+            
+            <div class="result-card">
+                <div class="result-title">一次性工伤医疗补助金</div>
+                <div class="result-detail">
+                    <span>计算方式：</span>
+                    <span id="medical-detail"></span>
+                </div>
+                <div class="result-detail">
+                    <span>金额：</span>
+                    <span id="medical-amount"></span>
+                </div>
+                <div class="payer" id="medical-payer"></div>
+            </div>
+            
+            <div class="result-card">
+                <div class="result-title">一次性伤残就业补助金</div>
+                <div class="result-detail">
+                    <span>计算方式：</span>
+                    <span id="employment-detail"></span>
+                </div>
+                <div class="result-detail">
+                    <span>金额：</span>
+                    <span id="employment-amount"></span>
+                </div>
+                <div class="payer" id="employment-payer"></div>
+            </div>
+            
+            <div class="result-card">
+                <div class="result-detail total">
+                    <span>赔偿总额：</span>
+                    <span id="total-amount"></span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="instructions">
+            <h2>如何部署到GitHub Pages</h2>
+            <ol>
+                <li>将本页HTML代码保存为index.html文件</li>
+                <li>创建一个GitHub账号（如果没有）</li>
+                <li>在GitHub上创建一个新的代码仓库（Repository）</li>
+                <li>将index.html文件上传到仓库中</li>
+                <li>进入仓库设置（Settings）→ 页面（Pages）</li>
+                <li>在"Build and deployment"部分，选择"Deploy from a branch"</li>
+                <li>在"Branch"部分，选择main分支和/(root)文件夹</li>
+                <li>点击保存，等待几分钟后，您的网站就会发布</li>
+                <li>访问 https://[您的用户名].github.io/[仓库名] 查看您的计算器</li>
+            </ol>
+        </div>
+        
+        <footer>
+            <p>免责声明：本计算器仅供参考，实际赔偿金额以相关部门核定为准。</p>
+            <p>© 2023 工伤赔偿计算器 | 基于《工伤保险条例》</p>
+        </footer>
+    </div>
+
+    <script>
+        function calculate() {
+            // 获取用户输入
+            const salary = parseFloat(document.getElementById('salary').value);
+            const grade = document.getElementById('grade').value;
+            const averageSalary = parseFloat(document.getElementById('averageSalary').value);
+            
+            // 验证输入
+            if (isNaN(salary) || salary <= 0) {
+                alert('请输入有效的月平均工资');
+                return;
+            }
+            
+            if (isNaN(averageSalary) || averageSalary <= 0) {
+                alert('请输入有效的全市职工月平均工资');
+                return;
+            }
+            
+            // 定义各伤残等级对应的月份数
+            const disabilityMonths = {
+                '7': 12,
+                '8': 11,
+                '9': 9,
+                '10': 7
+            };
+            
+            const subsidyMonths = {
+                '7': 12,
+                '8': 9,
+                '9': 6,
+                '10': 3
+            };
+            
+            // 计算各项赔偿
+            const disabilityAmount = salary * disabilityMonths[grade];
+            const medicalAmount = averageSalary * subsidyMonths[grade];
+            const employmentAmount = averageSalary * subsidyMonths[grade];
+            const totalAmount = disabilityAmount + medicalAmount + employmentAmount;
+            
+            // 显示计算结果
+            document.getElementById('disability-detail').textContent = 
+                `${salary}元 × ${disabilityMonths[grade]}个月`;
+            document.getElementById('disability-amount').textContent = 
+                `${disabilityAmount.toFixed(2)}元`;
+            document.getElementById('disability-payer').textContent = 
+                '由工伤保险基金支付';
+            
+            document.getElementById('medical-detail').textContent = 
+                `${averageSalary}元 × ${subsidyMonths[grade]}个月`;
+            document.getElementById('medical-amount').textContent = 
+                `${medicalAmount.toFixed(2)}元`;
+            document.getElementById('medical-payer').textContent = 
+                '由工伤保险基金支付';
+            
+            document.getElementById('employment-detail').textContent = 
+                `${averageSalary}元 × ${subsidyMonths[grade]}个月`;
+            document.getElementById('employment-amount').textContent = 
+                `${employmentAmount.toFixed(2)}元`;
+            document.getElementById('employment-payer').textContent = 
+                '由用人单位支付';
+            
+            document.getElementById('total-amount').textContent = 
+                `${totalAmount.toFixed(2)}元`;
+            
+            // 显示结果区域
+            document.getElementById('results').style.display = 'block';
+        }
+    </script>
+</body>
+</html>
